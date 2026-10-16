@@ -1,0 +1,400 @@
+<Window x:Class="DesktopDynamicIsland.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="clr-namespace:DesktopDynamicIsland.Models"
+        mc:Ignorable="d"
+        Title="性能岛"
+        Width="218"
+        Height="32"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        SizeToContent="Manual"
+        Topmost="True"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        WindowStyle="None"
+        FontFamily="Segoe UI Variable Text, Segoe UI"
+        Loaded="OnLoaded"
+        Closing="OnWindowClosing"
+        Closed="OnWindowClosed"
+        PreviewMouseDown="OnWindowPreviewMouseDown"
+        PreviewKeyDown="OnWindowPreviewKeyDown">
+    <Window.Resources>
+        <LinearGradientBrush x:Key="ShellBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#EB202228" />
+            <GradientStop Offset="0.52" Color="#E81A1C21" />
+            <GradientStop Offset="1" Color="#E616181D" />
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ShellBorderBrush" Color="#2AFFFFFF" />
+        <SolidColorBrush x:Key="InnerHighlightBrush" Color="#12FFFFFF" />
+        <SolidColorBrush x:Key="DividerBrush" Color="#20FFFFFF" />
+        <SolidColorBrush x:Key="InkBrush" Color="#FFF3F4F6" />
+        <SolidColorBrush x:Key="MutedBrush" Color="#FFB2B6BF" />
+        <SolidColorBrush x:Key="SubtleBrush" Color="#FF777C86" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#FF7CA7E8" />
+        <SolidColorBrush x:Key="SuccessBrush" Color="#FF69C8A2" />
+        <SolidColorBrush x:Key="WarningBrush" Color="#FFE5AD5B" />
+        <SolidColorBrush x:Key="DangerBrush" Color="#FFE8787D" />
+
+        <Style x:Key="MetricLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="LineHeight" Value="16" />
+            <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+        </Style>
+
+        <Style x:Key="MetricValueStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="MinWidth" Value="42" />
+            <Setter Property="Foreground" Value="{StaticResource InkBrush}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="LineHeight" Value="16" />
+            <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+            <Setter Property="TextAlignment" Value="Right" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+            <Setter Property="TextOptions.TextRenderingMode" Value="ClearType" />
+            <Setter Property="Typography.NumeralAlignment" Value="Tabular" />
+        </Style>
+
+        <Style x:Key="CollapsedMetricValueStyle"
+               TargetType="TextBlock"
+               BasedOn="{StaticResource MetricValueStyle}">
+            <Setter Property="Margin" Value="4,0,0,0" />
+            <Setter Property="MinWidth" Value="26" />
+        </Style>
+
+        <Style x:Key="IconButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="27" />
+            <Setter Property="Height" Value="27" />
+            <Setter Property="Margin" Value="1,0,0,0" />
+            <Setter Property="Padding" Value="6.5" />
+            <Setter Property="Foreground" Value="#FFA9AEB7" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Chrome"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="7">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="#14000000" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter Property="Foreground" Value="#FFFFFFFF" />
+                                <Setter TargetName="Chrome" Property="Background" Value="#245E9BFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Chrome" Property="Background" Value="#24000000" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CollapsedIconButtonStyle" TargetType="Button" BasedOn="{StaticResource IconButtonStyle}">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="24" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="Padding" Value="5" />
+        </Style>
+    </Window.Resources>
+
+    <Grid x:Name="WindowRoot">
+        <Border x:Name="IslandShell"
+                Height="26"
+                Margin="3"
+                VerticalAlignment="Bottom"
+                Background="{StaticResource ShellBrush}"
+                BorderBrush="{StaticResource ShellBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                ClipToBounds="True"
+                RenderTransformOrigin="0.5,0.5"
+                MouseLeftButtonUp="OnIslandMouseLeftButtonUp">
+            <Border.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform x:Name="ShellScaleTransform" ScaleX="1" ScaleY="1" />
+                    <TranslateTransform x:Name="ShellTranslateTransform" />
+                </TransformGroup>
+            </Border.RenderTransform>
+            <Border.Effect>
+                <DropShadowEffect x:Name="ShellShadow"
+                                  BlurRadius="9"
+                                  Color="#000000"
+                                  Direction="270"
+                                  Opacity="0.28"
+                                  ShadowDepth="2" />
+            </Border.Effect>
+
+            <Grid>
+                <Border Margin="1"
+                        BorderBrush="{StaticResource InnerHighlightBrush}"
+                        BorderThickness="1,1,1,0"
+                        CornerRadius="15"
+                         IsHitTestVisible="False" />
+
+                <Viewbox Width="30"
+                         Height="26"
+                         HorizontalAlignment="Right"
+                         VerticalAlignment="Center"
+                         Stretch="Fill"
+                         IsHitTestVisible="False">
+                    <Path x:Name="TemperatureBorderSegment"
+                          Data="M 2,1 L 14,1 A 12,12 0 0 1 14,25 L 2,25"
+                          Fill="Transparent"
+                          Opacity="0"
+                          StrokeThickness="1.8"
+                          StrokeStartLineCap="Round"
+                          StrokeEndLineCap="Round"
+                          StrokeLineJoin="Round">
+                        <Path.Stroke>
+                            <SolidColorBrush x:Name="TemperatureSegmentBrush" Color="#FF72949B" />
+                        </Path.Stroke>
+                    </Path>
+                </Viewbox>
+
+                <Grid x:Name="CollapsedView" Margin="8,0" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="5" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="9" />
+                        <ColumnDefinition Width="80" />
+                        <ColumnDefinition Width="6" />
+                        <ColumnDefinition Width="24" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid x:Name="CollapsedPrimaryGroup" VerticalAlignment="Center" Height="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="24" />
+                            <ColumnDefinition Width="34" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse x:Name="CollapsedPrimaryIndicator"
+                                  Width="6" Height="6"
+                                  Margin="0,2,0,0"
+                                  VerticalAlignment="Center"
+                                 Fill="{StaticResource SuccessBrush}" />
+                        <TextBlock x:Name="CollapsedPrimaryLabel" Grid.Column="2"
+                                   Style="{StaticResource MetricLabelStyle}" Text="CPU" />
+                        <TextBlock x:Name="CollapsedPrimaryText" Grid.Column="3"
+                                   HorizontalAlignment="Right"
+                                   Style="{StaticResource CollapsedMetricValueStyle}" Text="—" />
+                    </Grid>
+
+                    <Border Grid.Column="2" Width="1" Height="14"
+                            HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Background="{StaticResource DividerBrush}" />
+
+                    <Grid x:Name="CollapsedSecondaryGroup" Grid.Column="4" VerticalAlignment="Center" Height="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="6" />
+                            <ColumnDefinition Width="34" />
+                            <ColumnDefinition Width="34" />
+                        </Grid.ColumnDefinitions>
+                        <Ellipse x:Name="CollapsedSecondaryIndicator"
+                                  Width="6" Height="6"
+                                  Margin="0,2,0,0"
+                                  VerticalAlignment="Center"
+                                 Fill="{StaticResource SuccessBrush}" />
+                        <TextBlock x:Name="CollapsedSecondaryLabel" Grid.Column="2"
+                                   Style="{StaticResource MetricLabelStyle}" Text="RAM" />
+                        <TextBlock x:Name="CollapsedSecondaryText" Grid.Column="3"
+                                   HorizontalAlignment="Right"
+                                   Style="{StaticResource CollapsedMetricValueStyle}" Text="—" />
+                    </Grid>
+
+                    <Button x:Name="MetricPairToggleButton"
+                            Grid.Column="6"
+                            Style="{StaticResource CollapsedIconButtonStyle}"
+                            ToolTip="切换显示"
+                            Click="OnMetricPairToggleClick">
+                        <Viewbox x:Name="MetricPairToggleIcon"
+                                 Width="12" Height="12"
+                                 RenderTransformOrigin="0.5,0.5">
+                            <Viewbox.RenderTransform>
+                                <RotateTransform x:Name="MetricPairToggleRotation" />
+                            </Viewbox.RenderTransform>
+                            <Path Data="M2,4 L9.5,4 M7.5,2 L9.5,4 L7.5,6 M10,8 L2.5,8 M4.5,6 L2.5,8 L4.5,10"
+                                  Fill="Transparent"
+                                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                  StrokeThickness="1.35"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round" />
+                        </Viewbox>
+                    </Button>
+
+                </Grid>
+
+                <Grid x:Name="MessageView" Margin="14,0" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border x:Name="MessageBadge" Width="21" Height="21" VerticalAlignment="Center"
+                            Background="{StaticResource AccentBrush}" CornerRadius="7">
+                        <TextBlock x:Name="MessageIconText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   FontFamily="Segoe UI Symbol" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="White" Text="•" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="8,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="MessageTitleText" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource InkBrush}" Text="消息" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="MessageContentText" Margin="0,1,0,0" FontSize="9.5"
+                                   Foreground="{StaticResource MutedBrush}" Text="" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid x:Name="ExpandedView" Margin="14,8,14,7" Visibility="Collapsed" Opacity="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="28" />
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="6" />
+                        <RowDefinition Height="101" />
+                        <RowDefinition Height="6" />
+                        <RowDefinition Height="1" />
+                        <RowDefinition Height="26" />
+                    </Grid.RowDefinitions>
+
+                    <Grid x:Name="ExpandedHeader" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TranslateTransform x:Name="ExpandedHeaderTranslate" />
+                        </Grid.RenderTransform>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse x:Name="ExpandedStatusIndicator" Width="7" Height="7" Margin="0,0,7,0"
+                                     Fill="{StaticResource SuccessBrush}" />
+                            <TextBlock x:Name="ExpandedStatusText" VerticalAlignment="Center"
+                                       FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{StaticResource InkBrush}" Text="运行正常" />
+                        </StackPanel>
+
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                             <Button x:Name="MoveButton" Style="{StaticResource IconButtonStyle}" ToolTip="拖动位置"
+                                     PreviewMouseLeftButtonDown="OnMoveButtonMouseDown">
+                                <Viewbox Width="13" Height="13">
+                                    <Path Width="14" Height="14"
+                                          Data="M7,0 L4.7,2.3 6.2,2.3 6.2,6.2 2.3,6.2 2.3,4.7 0,7 2.3,9.3 2.3,7.8 6.2,7.8 6.2,11.7 4.7,11.7 7,14 9.3,11.7 7.8,11.7 7.8,7.8 11.7,7.8 11.7,9.3 14,7 11.7,4.7 11.7,6.2 7.8,6.2 7.8,2.3 9.3,2.3 Z"
+                                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                                </Viewbox>
+                            </Button>
+                            <Button Style="{StaticResource IconButtonStyle}" ToolTip="复位到右下角" Click="OnResetPositionClick">
+                                <Viewbox Width="13" Height="13">
+                                    <Path Data="M12.2,4.7 C11.2,2.5 9.1,1.1 6.7,1.1 C3.4,1.1 0.8,3.8 0.8,7 C0.8,10.3 3.4,12.9 6.7,12.9 C9.4,12.9 11.7,11.1 12.4,8.6 M12.2,1.5 L12.2,4.8 L8.9,4.8"
+                                          Fill="Transparent"
+                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                          StrokeThickness="1.5" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
+                                </Viewbox>
+                            </Button>
+                            <Button Style="{StaticResource IconButtonStyle}" ToolTip="隐藏到托盘" Click="OnHideClick">
+                                <Viewbox Width="13" Height="13">
+                                    <Path Data="M2,7 L12,7" Fill="Transparent"
+                                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                          StrokeThickness="1.7" StrokeStartLineCap="Round" StrokeEndLineCap="Round" />
+                                </Viewbox>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border Grid.Row="1" Height="1" Background="{StaticResource DividerBrush}" />
+
+                    <Grid x:Name="ExpandedMetrics" Grid.Row="3" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TranslateTransform x:Name="ExpandedMetricsTranslate" />
+                        </Grid.RenderTransform>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="33" />
+                            <RowDefinition Height="1" />
+                            <RowDefinition Height="33" />
+                            <RowDefinition Height="1" />
+                            <RowDefinition Height="33" />
+                        </Grid.RowDefinitions>
+
+                        <Border Grid.Column="1" Grid.RowSpan="5" Background="{StaticResource DividerBrush}" />
+                        <Border Grid.Row="1" Grid.ColumnSpan="3" Margin="0,0,0,0" Background="#13FFFFFF" />
+                        <Border Grid.Row="3" Grid.ColumnSpan="3" Margin="0,0,0,0" Background="#13FFFFFF" />
+
+                        <Grid Grid.Row="0" Margin="1,0,13,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="CPU" />
+                            <TextBlock x:Name="ExpandedCpuText" HorizontalAlignment="Right" Style="{StaticResource MetricValueStyle}" Text="—" />
+                        </Grid>
+                        <Grid Grid.Row="0" Grid.Column="2" Margin="13,0,1,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="RAM" />
+                            <TextBlock x:Name="ExpandedRamText" HorizontalAlignment="Right" Style="{StaticResource MetricValueStyle}" Text="—" />
+                        </Grid>
+                        <Grid Grid.Row="2" Margin="1,0,13,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="GPU" />
+                            <TextBlock x:Name="ExpandedGpuText" HorizontalAlignment="Right" Style="{StaticResource MetricValueStyle}" Text="—" />
+                        </Grid>
+                        <Grid Grid.Row="2" Grid.Column="2" Margin="13,0,1,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="VRAM" />
+                            <TextBlock x:Name="ExpandedVramText" HorizontalAlignment="Right" Style="{StaticResource MetricValueStyle}" Text="—" />
+                        </Grid>
+                        <Grid Grid.Row="4" Margin="1,0,13,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="GPU 温度" />
+                            <TextBlock x:Name="ExpandedGpuTemperatureText" HorizontalAlignment="Right" Style="{StaticResource MetricValueStyle}" Text="—" />
+                        </Grid>
+                        <Grid Grid.Row="4" Grid.Column="2" Margin="13,0,1,0">
+                            <TextBlock Style="{StaticResource MetricLabelStyle}" Text="磁盘写入" />
+                            <TextBlock x:Name="ExpandedDiskText" MaxWidth="76" HorizontalAlignment="Right"
+                                       Style="{StaticResource MetricValueStyle}" Text="—" TextTrimming="CharacterEllipsis" />
+                        </Grid>
+                    </Grid>
+
+                    <Border Grid.Row="5" Height="1" Background="{StaticResource DividerBrush}" />
+
+                    <Grid x:Name="ExpandedHistory" Grid.Row="6" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <TranslateTransform x:Name="ExpandedHistoryTranslate" />
+                        </Grid.RenderTransform>
+                        <TextBlock x:Name="EmptyMessagesText" VerticalAlignment="Center" FontSize="10.5"
+                                   Foreground="{StaticResource SubtleBrush}" Text="暂无状况变化" />
+                        <ItemsControl x:Name="RecentMessagesList" VerticalAlignment="Center">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:IslandMessage}">
+                                    <Grid Height="26">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="42" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock VerticalAlignment="Center" FontSize="10"
+                                                   Foreground="{StaticResource SubtleBrush}" Text="{Binding ShortTime}" />
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontSize="10.5"
+                                                   Foreground="{StaticResource MutedBrush}" Text="{Binding Title}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>
